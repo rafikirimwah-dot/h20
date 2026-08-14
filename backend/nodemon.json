@@ -1,0 +1,8 @@
+{
+    "env": {
+        "PORT": "5001"
+    },
+    "watch": ["src"],
+    "ext": "js,json",
+    "ignore": ["node_modules", "dist"]
+}
