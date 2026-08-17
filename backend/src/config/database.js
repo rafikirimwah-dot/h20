@@ -10,6 +10,7 @@ const pool = mysql.createPool({
     password: process.env.DB_PASSWORD || '',
     database: process.env.DB_NAME || 'h2o_db',
     port: process.env.DB_PORT || 3306,
+    charset: 'utf8mb4',
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
@@ -31,3 +32,12 @@ const testConnection = async () => {
 };
 
 module.exports = { db, testConnection };
+// helper to close pool (used in tests)
+module.exports.closePool = async () => {
+    try {
+        await pool.end();
+        console.log('✅ DB pool closed');
+    } catch (err) {
+        console.error('Error closing DB pool:', err);
+    }
+};

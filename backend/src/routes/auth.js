@@ -164,6 +164,7 @@ const createInitialAdmin = async () => {
     }
 };
 
-createInitialAdmin();
+// expose createInitialAdmin so server can call it after DB is ready
+router.createInitialAdmin = createInitialAdmin;
 
 module.exports = router;

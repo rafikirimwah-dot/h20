@@ -11,6 +11,7 @@ const SubstationDashboard = () => {
     const [selectedTap, setSelectedTap] = useState('A');
     const [socket, setSocket] = useState(null);
     const [message, setMessage] = useState(null);
+    const [assignedOrders, setAssignedOrders] = useState([]);
 
     const substationId = getSubstationId();
 
@@ -35,6 +36,15 @@ const SubstationDashboard = () => {
             fetchDashboardData();
         });
 
+        newSocket.on('delivery-assigned', (order) => {
+            // if assigned to this substation, refresh orders
+            if (order.assigned_to === substationId) fetchAssignedOrders();
+        });
+
+        newSocket.on('delivery-delivered', (order) => {
+            if (order.assigned_to === substationId) fetchAssignedOrders();
+        });
+
         return () => newSocket.close();
     }, [substationId]);
 
@@ -45,6 +55,19 @@ const SubstationDashboard = () => {
             console.error('No substation ID found for user:', user);
         }
     }, [substationId, user]);
+
+    useEffect(() => {
+        if (substationId) fetchAssignedOrders();
+    }, [substationId]);
+
+    const fetchAssignedOrders = async () => {
+        try {
+            const res = await api.get(`/delivery/substation/${substationId}`);
+            setAssignedOrders(res.data.data || []);
+        } catch (err) {
+            console.error('Error fetching assigned orders:', err);
+        }
+    };
 
     const fetchDashboardData = async () => {
         try {
@@ -115,6 +138,37 @@ const SubstationDashboard = () => {
         );
     }
 
+    // Notification panel for assigned orders
+    const AssignedOrdersPanel = () => (
+        <div className="card mb-4">
+            <div className="card-header">📦 Assigned Delivery Orders</div>
+            <div className="card-body">
+                {assignedOrders.length === 0 ? (
+                    <div className="text-muted">No assigned orders</div>
+                ) : (
+                    assignedOrders.map(o => (
+                        <div key={o.id} className="mb-3 border-bottom pb-2">
+                            <div><strong>{o.customer_name}</strong> — {o.liters_requested} L</div>
+                            <div className="small text-muted">{o.delivery_address}</div>
+                            <div className="mt-2">
+                                <button className="btn btn-sm btn-success me-2" onClick={async () => {
+                                    try {
+                                        await api.post(`/delivery/${o.id}/deliver`);
+                                        fetchAssignedOrders();
+                                        fetchDashboardData();
+                                    } catch (err) {
+                                        alert(err.response?.data?.message || err.message);
+                                    }
+                                }}>Mark Delivered</button>
+                                <small className="text-muted">Requested: {o.delivery_date || 'N/A'} {o.delivery_time || ''}</small>
+                            </div>
+                        </div>
+                    ))
+                )}
+            </div>
+        </div>
+    );
+
     if (loading) {
         return (
             <div className="d-flex justify-content-center align-items-center" style={{ height: '70vh' }}>
@@ -160,6 +214,8 @@ const SubstationDashboard = () => {
                     <button type="button" className="btn-close" onClick={() => setMessage(null)}></button>
                 </div>
             )}
+
+            <AssignedOrdersPanel />
 
             <div className="row mb-4">
                 <div className="col-md-3">

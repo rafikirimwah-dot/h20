@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import api from '../../api/axiosConfig';
 
 const Login = () => {
     const [username, setUsername] = useState('');
@@ -131,9 +132,94 @@ const Login = () => {
                         {loading ? 'Logging in...' : 'Login'}
                     </button>
                 </form>
+
+                {/* Public Delivery Order Form */}
+                <div style={{ marginTop: '30px' }}>
+                    <h4 style={{ marginBottom: '10px' }}>📦 Place Delivery Order (No login required)</h4>
+                    <DeliveryForm />
+                </div>
             </div>
         </div>
     );
 };
 
 export default Login;
+
+const DeliveryForm = () => {
+    const [name, setName] = useState('');
+    const [phone, setPhone] = useState('');
+    const [address, setAddress] = useState('');
+    const [liters, setLiters] = useState(10);
+    const [datetime, setDatetime] = useState('');
+    const [message, setMessage] = useState(null);
+    const [submitting, setSubmitting] = useState(false);
+
+    const validatePhone = (p) => {
+        return /^\+?[0-9\- ]{7,15}$/.test(p);
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setMessage(null);
+
+        if (!name || !phone || !address || !liters) {
+            setMessage({ type: 'danger', text: 'Please fill all fields' });
+            return;
+        }
+        if (!validatePhone(phone)) {
+            setMessage({ type: 'danger', text: 'Please enter a valid phone number' });
+            return;
+        }
+        if (liters < 10 || liters > 5000) {
+            setMessage({ type: 'danger', text: 'Liters must be between 10 and 5000' });
+            return;
+        }
+
+        try {
+            setSubmitting(true);
+
+            // optional: check reservoir quickly
+            const d = datetime ? new Date(datetime) : null;
+            const delivery_date = d ? d.toISOString().split('T')[0] : null;
+            const delivery_time = d ? d.toTimeString().split(' ')[0] : null;
+
+            const payload = {
+                customer_name: name,
+                customer_phone: phone,
+                delivery_address: address,
+                liters_requested: parseInt(liters),
+                delivery_date,
+                delivery_time
+            };
+
+            const res = await api.post('/delivery', payload);
+            if (res.data.success) {
+                setMessage({ type: 'success', text: 'Order placed successfully' });
+                setName(''); setPhone(''); setAddress(''); setLiters(10); setDatetime('');
+            } else {
+                setMessage({ type: 'danger', text: res.data.message || 'Failed to place order' });
+            }
+        } catch (err) {
+            setMessage({ type: 'danger', text: err.response?.data?.message || err.message });
+        } finally {
+            setSubmitting(false);
+            setTimeout(() => setMessage(null), 4000);
+        }
+    };
+
+    return (
+        <div style={{ borderTop: '1px solid #eee', paddingTop: '20px' }}>
+            {message && <div className={`alert alert-${message.type}`}>{message.text}</div>}
+            <form onSubmit={handleSubmit}>
+                <div style={{ display: 'grid', gap: '10px' }}>
+                    <input placeholder="Full name" value={name} onChange={(e) => setName(e.target.value)} className="form-control" />
+                    <input placeholder="Phone" value={phone} onChange={(e) => setPhone(e.target.value)} className="form-control" />
+                    <input placeholder="Address" value={address} onChange={(e) => setAddress(e.target.value)} className="form-control" />
+                    <input type="number" min="10" max="5000" value={liters} onChange={(e) => setLiters(e.target.value)} className="form-control" />
+                    <input type="datetime-local" value={datetime} onChange={(e) => setDatetime(e.target.value)} className="form-control" />
+                    <button className="btn btn-primary" disabled={submitting}>{submitting ? 'Placing...' : 'Place Order'}</button>
+                </div>
+            </form>
+        </div>
+    );
+};

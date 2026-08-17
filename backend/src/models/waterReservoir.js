@@ -16,6 +16,15 @@ class WaterReservoir {
         return result;
     }
 
+    // Record a draw amount on reservoir stats without changing remaining liters
+    static async recordDraw(amount) {
+        const [result] = await db.query(
+            'UPDATE water_reservoir SET total_drawn = total_drawn + ? WHERE id = 1',
+            [amount]
+        );
+        return result;
+    }
+
     // Check if enough water is available
     static async hasEnoughWater(amount) {
         const status = await this.getStatus();
