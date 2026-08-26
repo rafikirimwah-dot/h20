@@ -47,7 +47,35 @@ const AdminDashboard = () => {
         try {
             setLoading(true);
             const response = await api.get('/dashboard');
-            setDashboardData(response.data.data);
+            const data = response.data.data;
+            const reservoir = data?.reservoir || {};
+            const summary = data?.summary || {};
+            const toNumber = (value) => Number(value) || 0;
+
+            setDashboardData({
+                reservoir: {
+                    total_liters: toNumber(reservoir.total_liters),
+                    remaining_liters: toNumber(reservoir.remaining_liters),
+                    total_drawn: toNumber(reservoir.total_drawn)
+                },
+                summary: {
+                    total_substations: toNumber(summary.total_substations),
+                    active_substations: toNumber(summary.active_substations),
+                    total_allocated: toNumber(summary.total_allocated),
+                    total_drawn: toNumber(summary.total_drawn)
+                },
+                substations: Array.isArray(data?.substations)
+                    ? data.substations.map((substation) => ({
+                        ...substation,
+                        allocated_water: toNumber(substation.allocated_water),
+                        remaining_water: toNumber(substation.remaining_water),
+                        total_drawn: toNumber(substation.total_drawn),
+                        tap_a_drawn: toNumber(substation.tap_a_drawn),
+                        tap_b_drawn: toNumber(substation.tap_b_drawn)
+                    }))
+                    : [],
+                recent_activity: Array.isArray(data?.recent_activity) ? data.recent_activity : []
+            });
         } catch (error) {
             console.error('Error fetching dashboard:', error);
             if (error.response?.status === 403) {
@@ -93,7 +121,9 @@ const AdminDashboard = () => {
     }
 
     const { reservoir, summary, substations, recent_activity } = dashboardData;
-    const percentageUsed = ((reservoir.total_drawn / reservoir.total_liters) * 100).toFixed(1);
+    const percentageUsed = reservoir.total_liters > 0
+        ? ((reservoir.total_drawn / reservoir.total_liters) * 100).toFixed(1)
+        : '0.0';
 
     return (
         <div className="container-fluid p-4">

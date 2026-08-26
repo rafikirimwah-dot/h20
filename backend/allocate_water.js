@@ -7,7 +7,7 @@ async function allocateInitialWater() {
         console.log('💧 Allocating initial water to substations...');
 
         // Reset everything first
-        await db.query('UPDATE water_reservoir SET remaining_liters = 100000, total_drawn = 0 WHERE id = 1');
+        await db.query('UPDATE water_reservoir SET capacity_liters = 600000, remaining_liters = 600000, total_drawn = 0 WHERE id = 1');
         await db.query('UPDATE substations SET allocated_water = 0, remaining_water = 0, total_drawn = 0, tap_a_drawn = 0, tap_b_drawn = 0');
         await db.query('DELETE FROM tap_usage');
         await db.query('DELETE FROM allocation_logs');

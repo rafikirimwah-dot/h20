@@ -12,6 +12,9 @@ router.get('/', verifyToken, isAdmin, async (req, res) => {
         const reservoir = await WaterReservoir.getStats();
         const substations = await Substation.findAllWithStats();
         const recentActivity = await TapUsage.getRecentActivity(20);
+        const totalLiters = Number(reservoir.capacity_liters) || 0;
+        const remainingLiters = Number(reservoir.remaining_liters) || 0;
+        const reservoirDrawn = Number(reservoir.total_drawn) || 0;
         
         const totalDrawn = substations.reduce((sum, s) => sum + s.total_drawn, 0);
         const totalAllocated = substations.reduce((sum, s) => sum + s.allocated_water, 0);
@@ -21,10 +24,10 @@ router.get('/', verifyToken, isAdmin, async (req, res) => {
             success: true,
             data: {
                 reservoir: {
-                    total_liters: reservoir.total_liters,
-                    remaining_liters: reservoir.remaining_liters,
-                    total_drawn: reservoir.total_drawn,
-                    percentage_used: ((reservoir.total_drawn / reservoir.total_liters) * 100).toFixed(2)
+                    total_liters: totalLiters,
+                    remaining_liters: remainingLiters,
+                    total_drawn: reservoirDrawn,
+                    percentage_used: totalLiters > 0 ? ((reservoirDrawn / totalLiters) * 100).toFixed(2) : '0.00'
                 },
                 summary: {
                     total_substations: substations.length,

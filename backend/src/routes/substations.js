@@ -16,7 +16,7 @@ router.get('/', verifyToken, isAdmin, async (req, res) => {
             data: {
                 substations,
                 reservoir: {
-                    total_liters: reservoir.total_liters,
+                    total_liters: reservoir.capacity_liters,
                     remaining_liters: reservoir.remaining_liters,
                     total_drawn: reservoir.total_drawn
                 }
