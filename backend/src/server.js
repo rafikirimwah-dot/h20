@@ -46,6 +46,9 @@ const start = async () => {
                 if (auth && typeof auth.createInitialAdmin === 'function') {
                     await auth.createInitialAdmin();
                 }
+                if (auth && typeof auth.createInitialSubstationUsers === 'function') {
+                    await auth.createInitialSubstationUsers();
+                }
                 resolve(server);
             } catch (error) {
                 console.log('Database connection warning:', error.message);

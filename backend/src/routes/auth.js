@@ -164,7 +164,25 @@ const createInitialAdmin = async () => {
     }
 };
 
+const createInitialSubstationUsers = async () => {
+    const password = await bcrypt.hash('maji123', 10);
+    const users = [1, 2, 3, 4, 5, 6];
+
+    for (const substationId of users) {
+        const username = `maji${substationId}`;
+        const [rows] = await db.query('SELECT id FROM users WHERE username = ?', [username]);
+        if (rows.length === 0) {
+            await db.query(
+                'INSERT INTO users (username, password, role, substation_id) VALUES (?, ?, ?, ?)',
+                [username, password, 'substation_admin', substationId]
+            );
+            console.log(`✅ Substation user created: ${username} / maji123`);
+        }
+    }
+};
+
 // expose createInitialAdmin so server can call it after DB is ready
 router.createInitialAdmin = createInitialAdmin;
+router.createInitialSubstationUsers = createInitialSubstationUsers;
 
 module.exports = router;
