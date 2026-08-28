@@ -1,8 +1,8 @@
 const express = require('express');
 const { db } = require('../config/database');
-const Substation = require('../models/Substation');
-const WaterReservoir = require('../models/WaterReservoir');
-const TapUsage = require('../models/TapUsage');
+const Substation = require('../models/substation');
+const WaterReservoir = require('../models/waterReservoir');
+const TapUsage = require('../models/Tapusage');
 const { verifyToken, isSubstationAdmin } = require('../middleware/auth');
 const router = express.Router();
 

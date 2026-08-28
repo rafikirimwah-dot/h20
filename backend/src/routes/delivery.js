@@ -2,8 +2,8 @@ const express = require('express');
 const router = express.Router();
 const DeliveryOrder = require('../models/DeliveryOrder');
 const { verifyToken, isAdmin, hasSubstationAccess } = require('../middleware/auth');
-const WaterReservoir = require('../models/WaterReservoir');
-const Substation = require('../models/Substation');
+const WaterReservoir = require('../models/waterReservoir');
+const Substation = require('../models/substation');
 
 // Public: create delivery order
 router.post('/', async (req, res) => {
