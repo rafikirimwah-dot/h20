@@ -95,6 +95,38 @@ async function setup() {
             await db.query('INSERT INTO substations (name) SELECT ? WHERE NOT EXISTS (SELECT 1 FROM substations WHERE name = ?)', [name, name]);
         }
 
+        // Apply the initial allocation once for a fresh database.
+        const [[allocationState]] = await db.query(`
+            SELECT
+                (SELECT COUNT(*) FROM allocation_logs) AS allocation_count,
+                (SELECT COALESCE(SUM(allocated_water), 0) FROM substations) AS allocated_total,
+                (SELECT capacity_liters FROM water_reservoir WHERE id = 1) AS capacity_liters,
+                (SELECT remaining_liters FROM water_reservoir WHERE id = 1) AS remaining_liters
+        `);
+        if (
+            Number(allocationState.allocation_count) === 0
+            && Number(allocationState.allocated_total) === 0
+            && Number(allocationState.remaining_liters) === Number(allocationState.capacity_liters)
+            && Number(allocationState.capacity_liters) >= 480000
+        ) {
+            const initialAllocation = 80000;
+            for (let substationId = 1; substationId <= 6; substationId += 1) {
+                await db.query(
+                    'UPDATE substations SET allocated_water = allocated_water + ?, remaining_water = remaining_water + ? WHERE id = ?',
+                    [initialAllocation, initialAllocation, substationId]
+                );
+                await db.query(
+                    'INSERT INTO allocation_logs (substation_id, allocated_amount, allocated_by) VALUES (?, ?, ?)',
+                    [substationId, initialAllocation, 'system']
+                );
+            }
+            await db.query(
+                'UPDATE water_reservoir SET remaining_liters = remaining_liters - ? WHERE id = 1',
+                [initialAllocation * 6]
+            );
+            console.log('✅ Initial allocation applied: 80000 L per substation');
+        }
+
         console.log('✅ Tables ensured and substations seeded');
         return true;
     } catch (err) {
