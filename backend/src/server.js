@@ -1,6 +1,7 @@
 const http = require('http');
 const { Server } = require('socket.io');
 const app = require('./app');
+const setupTables = require('../setup_tables');
 
 const allowedOrigins = [
     'http://localhost:5173',
@@ -36,7 +37,11 @@ const start = async () => {
             console.log(`Server running on http://localhost:${PORT}`);
             try {
                 const { testConnection } = require('./config/database');
-                await testConnection();
+                const connected = await testConnection();
+                if (!connected) {
+                    throw new Error('Database connection failed');
+                }
+                await setupTables();
                 const auth = require('./routes/auth');
                 if (auth && typeof auth.createInitialAdmin === 'function') {
                     await auth.createInitialAdmin();

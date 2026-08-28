@@ -96,11 +96,17 @@ async function setup() {
         }
 
         console.log('✅ Tables ensured and substations seeded');
-        process.exit(0);
+        return true;
     } catch (err) {
         console.error('❌ Error creating tables:', err);
-        process.exit(1);
+        throw err;
     }
 }
 
-setup();
+if (require.main === module) {
+    setup()
+        .then(() => process.exit(0))
+        .catch(() => process.exit(1));
+}
+
+module.exports = setup;
