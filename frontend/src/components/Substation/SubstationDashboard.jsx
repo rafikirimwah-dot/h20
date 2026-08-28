@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import api from '../../api/axiosConfig';
+import { SOCKET_URL } from '../../api/runtimeConfig';
 import { io } from 'socket.io-client';
 
 const SubstationDashboard = () => {
@@ -16,7 +17,7 @@ const SubstationDashboard = () => {
     const substationId = getSubstationId();
 
     useEffect(() => {
-        const newSocket = io('http://localhost:5001');
+        const newSocket = io(SOCKET_URL);
         setSocket(newSocket);
 
         newSocket.on('connect', () => {

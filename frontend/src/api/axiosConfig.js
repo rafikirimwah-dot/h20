@@ -1,7 +1,5 @@
 import axios from 'axios';
-
-// Use the correct port
-const API_URL = 'http://localhost:5001/api';
+import { API_URL } from './runtimeConfig';
 
 const api = axios.create({
     baseURL: API_URL,
