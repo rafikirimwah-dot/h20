@@ -52,7 +52,7 @@ export const AuthProvider = ({ children }) => {
             if (error.response?.data?.message) {
                 errorMessage = error.response.data.message;
             } else if (error.code === 'ERR_NETWORK') {
-                errorMessage = 'Cannot connect to server. Make sure backend is running on port 5001';
+                errorMessage = 'Cannot connect to the backend service. Check the deployed backend URL and CORS settings.';
             } else if (error.response?.status === 401) {
                 errorMessage = 'Invalid username or password';
             } else if (error.response?.status === 500) {

@@ -53,7 +53,7 @@ const Login = () => {
                     </h1>
                     <p style={{ color: '#666', marginTop: '5px' }}>Water Distribution System</p>
                     <p style={{ color: '#999', fontSize: '12px', marginTop: '5px' }}>
-                        Frontend: Port 5174 | Backend: Port 5001
+                        Water distribution management portal
                     </p>
                 </div>
 
