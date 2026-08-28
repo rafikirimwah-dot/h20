@@ -1,6 +1,6 @@
 const { db } = require('./src/config/database');
-const WaterReservoir = require('./src/models/WaterReservoir');
-const Substation = require('./src/models/Substation');
+const WaterReservoir = require('./src/models/waterReservoir');
+const Substation = require('./src/models/substation');
 
 async function allocateInitialWater() {
     try {
@@ -15,14 +15,10 @@ async function allocateInitialWater() {
         console.log('✅ Reset all water data');
 
         // Define allocations for each substation
-        const allocations = [
-            { id: 1, amount: 20000 },  // Maji 1
-            { id: 2, amount: 15000 },  // Maji 2
-            { id: 3, amount: 18000 },  // Maji 3
-            { id: 4, amount: 12000 },  // Maji 4
-            { id: 5, amount: 20000 },  // Maji 5
-            { id: 6, amount: 15000 }   // Maji 6
-        ];
+        const allocations = [1, 2, 3, 4, 5, 6].map((id) => ({
+            id,
+            amount: 80000
+        }));
 
         let totalAllocated = 0;
 
