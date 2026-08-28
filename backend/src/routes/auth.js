@@ -101,7 +101,7 @@ router.post('/login', async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Login failed',
-            error: error.message
+            error: error.message || error.code || String(error)
         });
     }
 });

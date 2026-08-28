@@ -3,13 +3,19 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
+const databaseUrl = process.env.DATABASE_URL;
+const parsedDatabaseUrl = databaseUrl ? new URL(databaseUrl) : null;
+const sslMode = (parsedDatabaseUrl?.searchParams.get('ssl-mode') || process.env.SSL_MODE || process.env.DB_SSL || '').toLowerCase();
+const ssl = sslMode === 'required' ? { rejectUnauthorized: false } : undefined;
+
 // Create connection pool
 const pool = mysql.createPool({
-    host: process.env.DB_HOST || 'localhost',
-    user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || '',
-    database: process.env.DB_NAME || 'h2o_db',
-    port: process.env.DB_PORT || 3306,
+    host: parsedDatabaseUrl?.hostname || process.env.DB_HOST || process.env.MYSQLHOST || 'localhost',
+    user: parsedDatabaseUrl?.username || process.env.DB_USER || process.env.MYSQLUSER || 'root',
+    password: parsedDatabaseUrl?.password || process.env.DB_PASSWORD || process.env.MYSQLPASSWORD || '',
+    database: parsedDatabaseUrl?.pathname?.slice(1) || process.env.DB_NAME || process.env.MYSQLDATABASE || 'h2o_db',
+    port: parsedDatabaseUrl?.port || process.env.DB_PORT || process.env.MYSQLPORT || 3306,
+    ssl,
     charset: 'utf8mb4',
     waitForConnections: true,
     connectionLimit: 10,
@@ -26,7 +32,7 @@ const testConnection = async () => {
         console.log('✅ MySQL Database connected successfully!');
         return true;
     } catch (error) {
-        console.error('❌ MySQL Database connection failed:', error.message);
+        console.error('❌ MySQL Database connection failed:', error.code || error.message || String(error));
         return false;
     }
 };

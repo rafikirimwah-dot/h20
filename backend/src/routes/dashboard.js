@@ -105,7 +105,7 @@ router.get('/health', async (req, res) => {
         res.status(500).json({
             success: false,
             status: 'unhealthy',
-            error: error.message
+            error: error.code || error.message || String(error)
         });
     }
 });
